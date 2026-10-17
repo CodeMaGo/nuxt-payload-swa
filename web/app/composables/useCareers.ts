@@ -2,7 +2,7 @@ import type { Career, PaginatedCareers } from '#careers/types'
 import { emptyCareerPage } from '#careers/types'
 
 /**
- * First page of published vacancies. During `nuxt generate` this resolves via
+ * First page of published career paths. During `nuxt generate` this resolves via
  * the local Nitro route (which calls Payload directly); in the browser it
  * calls the Azure Functions API.
  */
@@ -58,7 +58,7 @@ export function useMoreCareers(firstPage: Ref<PaginatedCareers>) {
 
 /**
  * Prerendered HTML reflects the last build. After mount, re-read the live API
- * so withdrawn or edited vacancies are reflected without waiting for a rebuild.
+ * so unpublished or edited career paths are reflected without waiting for a rebuild.
  * Failures are ignored: the prerendered content remains a valid fallback.
  */
 export function useRevalidate(revalidate: () => Promise<void>) {

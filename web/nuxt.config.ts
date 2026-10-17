@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      siteName: 'Acme Careers',
+      siteName: 'Ignite Hubs Careers Hubs',
       siteUrl: '',
     },
   },
@@ -28,6 +28,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
+      meta: [{ name: 'theme-color', content: '#c2410c' }],
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     },
   },
@@ -44,14 +45,14 @@ export default defineNuxtConfig({
   },
 
   hooks: {
-    // Discover every published vacancy directly from Payload so each one gets
-    // its own prerendered page (the list page only links to the first page).
+    // Discover every published career path directly from Payload so each one
+    // gets its own prerendered page, even beyond the first page of the list.
     async 'prerender:routes'(ctx) {
       const slugs = await fetchAllPublishedSlugs(payloadConfigFromEnv(process.env))
       for (const slug of slugs) {
         ctx.routes.add(`/careers/${slug}`)
       }
-      console.info(`[careers] prerendering ${slugs.length} vacancy page(s)`)
+      console.info(`[careers] prerendering ${slugs.length} career page(s)`)
     },
   },
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Career } from '#careers/types'
-import { safeUrl, toExcerpt, toPlainText } from '#careers/rich-text'
+import { toExcerpt, toPlainText } from '#careers/rich-text'
 
 const route = useRoute()
 const slug = String(route.params.slug)
@@ -14,12 +14,12 @@ if (error.value || !career.value) {
   const notFound = !error.value || error.value.statusCode === 404
   throw createError({
     statusCode: notFound ? 404 : 503,
-    statusMessage: notFound ? 'Vacancy not found' : 'Vacancy could not be loaded',
+    statusMessage: notFound ? 'Career path not found' : 'Career path could not be loaded',
     fatal: true,
   })
 }
 
-// Live check after mount: flags vacancies withdrawn since the last build.
+// Live check after mount: flags career paths unpublished since the last build.
 const withdrawn = ref(false)
 useRevalidate(async () => {
   try {
@@ -29,24 +29,19 @@ useRevalidate(async () => {
   }
 })
 
-const now = useMountedNow()
-const closed = computed(() => withdrawn.value || isClosed(career.value?.closingDate, now.value))
-const posted = computed(() => formatDate(career.value?.publishedAt))
-const closing = computed(() => formatDate(career.value?.closingDate))
-const applyUrl = computed(() => safeUrl(career.value?.applicationUrl))
 const summary = computed(
-  () => toExcerpt(career.value?.description, 160) ||`Apply for ${career.value?.title} at ${siteName}.`,
+  () => toExcerpt(career.value?.content, 160) || `Explore the ${career.value?.title} career path on ${siteName}.`,
 )
 
 useSeoMeta({
-  title: () => career.value?.title ?? 'Vacancy',
+  title: () => career.value?.title ?? 'Career path',
   description: () => summary.value,
   ogTitle: () => career.value?.title,
   ogDescription: () => summary.value,
-  ogType: 'website',
+  ogType: 'article',
 })
 
-// schema.org JobPosting structured data (eligibility for Google for Jobs).
+// schema.org Occupation structured data: describes a kind of work, not a job opening.
 useHead(() => ({
   link: siteUrl ? [{ rel: 'canonical', href: `${siteUrl.replace(/\/$/, '')}/careers/${slug}` }] : [],
   script: career.value
@@ -55,16 +50,9 @@ useHead(() => ({
         // Escape "<" so CMS content can never close the script element.
         innerHTML: JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'JobPosting',
-          title: career.value.title,
-          description: toPlainText(career.value.description) || career.value.title,
-          datePosted: career.value.publishedAt ?? undefined,
-          validThrough: career.value.closingDate ?? undefined,
-          employmentType: career.value.employmentType?.toUpperCase().replace(/[^A-Z]+/g, '_'),
-          hiringOrganization: { '@type': 'Organization', name: siteName },
-          jobLocation: career.value.location
-            ? { '@type': 'Place', address: career.value.location }
-            : undefined,
+          '@type': 'Occupation',
+          name: career.value.title,
+          description: toPlainText(career.value.content) || career.value.title,
         }).replace(/</g, '\\u003c'),
       }]
     : [],
@@ -72,26 +60,22 @@ useHead(() => ({
 </script>
 
 <template>
-  <article v-if="career" class="vacancy">
-    <NuxtLink to="/careers" class="back-link">← All vacancies</NuxtLink>
+  <article v-if="career" class="career">
+    <NuxtLink to="/careers" class="back-link">← All career paths</NuxtLink>
 
-    <header class="vacancy__header">
-      <p v-if="career.department" class="eyebrow">{{ career.department }}</p>
+    <header class="career__header">
+      <p class="eyebrow">Career path</p>
       <h1>{{ career.title }}</h1>
-      <CareerMeta :career="career" />
-      <p v-if="posted" class="vacancy__dates">
-        Posted {{ posted }}<template v-if="closing"> · Closes {{ closing }}</template>
-      </p>
     </header>
 
-    <p v-if="closed" class="notice notice--warning" role="status">
-      This vacancy is no longer accepting applications.
+    <p v-if="withdrawn" class="notice notice--warning" role="status">
+      This career path is no longer listed on {{ siteName }}.
     </p>
 
-    <RichText :value="career.description" />
+    <RichText :value="career.content" />
 
-    <p v-if="applyUrl && !closed" class="vacancy__apply">
-      <a :href="applyUrl" class="button" target="_blank" rel="noopener noreferrer">Apply for this role</a>
+    <p class="career__next">
+      <NuxtLink to="/careers" class="button button--secondary">Explore more career paths</NuxtLink>
     </p>
   </article>
 </template>

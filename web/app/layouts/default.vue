@@ -7,10 +7,13 @@ const { siteName } = useRuntimeConfig().public
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="container site-header__inner">
-        <NuxtLink to="/" class="brand">{{ siteName }}</NuxtLink>
+        <NuxtLink to="/" class="brand">
+          <img src="/favicon.svg" alt="" width="28" height="28" class="brand__mark">
+          {{ siteName }}
+        </NuxtLink>
         <nav aria-label="Main">
           <NuxtLink to="/">Home</NuxtLink>
-          <NuxtLink to="/careers">Vacancies</NuxtLink>
+          <NuxtLink to="/careers">Career paths</NuxtLink>
         </nav>
       </div>
     </header>
@@ -21,7 +24,7 @@ const { siteName } = useRuntimeConfig().public
 
     <footer class="site-footer">
       <div class="container">
-        Content managed in Payload CMS · Hosted on Azure Static Web Apps
+        {{ siteName }} · Helping students discover where their talents can take them
       </div>
     </footer>
   </div>
