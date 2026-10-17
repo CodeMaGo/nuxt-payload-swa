@@ -1,19 +1,23 @@
 /**
  * Payload hook that asks GitHub Actions to rebuild the static site when a
- * vacancy is published, changed or deleted. Copy into your Payload project.
+ * career path is published, changed or deleted. Copy into your Payload project.
  *
  * Payload environment variables:
- *   GITHUB_REPOSITORY  e.g. "my-org/careers-site"
+ *   GITHUB_REPOSITORY  e.g. "ignitehubs/careers-hub"
  *   GITHUB_DISPATCH_TOKEN  fine-grained PAT for that repo with "Contents: read and write"
  */
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
 
-export const triggerSiteRebuild: CollectionAfterChangeHook & CollectionAfterDeleteHook = async ({ doc, req }) => {
+export const triggerSiteRebuild: CollectionAfterChangeHook & CollectionAfterDeleteHook = async (args) => {
+  const { doc, req } = args
+  const previousDoc = 'previousDoc' in args ? args.previousDoc : undefined
   const repo = process.env.GITHUB_REPOSITORY
   const token = process.env.GITHUB_DISPATCH_TOKEN
 
-  // Saving a draft does not change the public site; skip it.
-  if (!repo || !token || doc?._status === 'draft') return doc
+  // Saving a career path that was and still is unpublished does not change the
+  // public site; skip it. Publishing, unpublishing and deleting all rebuild.
+  const hidden = doc?.published === false && previousDoc?.published === false
+  if (!repo || !token || hidden) return doc
 
   try {
     const response = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {

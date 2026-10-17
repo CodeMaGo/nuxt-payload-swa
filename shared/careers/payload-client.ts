@@ -10,6 +10,8 @@ export interface PayloadConfig {
   collection: string
   /** Filter on `_status = published` (collections with drafts enabled). */
   drafts: boolean
+  /** Checkbox field that marks a document as public, e.g. `published`; null disables. */
+  publishedField: string | null
   headers: Record<string, string>
   timeoutMs: number
 }
@@ -43,7 +45,9 @@ export function payloadConfigFromEnv(env: Env): PayloadConfig {
   return {
     baseUrl: url.replace(/\/+$/, ''),
     collection: env.PAYLOAD_CAREERS_COLLECTION?.trim() || 'careers',
-    drafts: env.PAYLOAD_DRAFTS?.trim().toLowerCase() !== 'false',
+    drafts: env.PAYLOAD_DRAFTS?.trim().toLowerCase() === 'true',
+    // Unset means the default `published` checkbox; an empty value disables the filter.
+    publishedField: env.PAYLOAD_PUBLISHED_FIELD === undefined ? 'published' : env.PAYLOAD_PUBLISHED_FIELD.trim() || null,
     headers: {
       Accept: 'application/json',
       ...(apiKey ? { Authorization: `${keyCollection} API-Key ${apiKey}` } : {}),
@@ -52,17 +56,7 @@ export function payloadConfigFromEnv(env: Env): PayloadConfig {
   }
 }
 
-const SELECTED_FIELDS = [
-  'title',
-  'slug',
-  'department',
-  'location',
-  'employmentType',
-  'description',
-  'publishedAt',
-  'applicationUrl',
-  'closingDate',
-] as const
+const SELECTED_FIELDS = ['title', 'slug', 'content'] as const
 
 export const MAX_PAGE_SIZE = 50
 
@@ -73,6 +67,9 @@ function baseQuery(config: PayloadConfig, fields: readonly string[]): Record<str
   }
   if (config.drafts) {
     query['where[_status][equals]'] = 'published'
+  }
+  if (config.publishedField) {
+    query[`where[${config.publishedField}][equals]`] = 'true'
   }
   return query
 }
@@ -103,13 +100,7 @@ function toCareer(doc: Career): Career {
     id: String(doc.id),
     title: doc.title,
     slug: doc.slug,
-    department: doc.department ?? null,
-    location: doc.location ?? null,
-    employmentType: doc.employmentType ?? null,
-    description: doc.description ?? null,
-    publishedAt: doc.publishedAt ?? null,
-    applicationUrl: doc.applicationUrl ?? null,
-    closingDate: doc.closingDate ?? null,
+    content: doc.content ?? null,
   }
 }
 
@@ -120,7 +111,8 @@ export async function fetchPublishedCareers(
   const result = await request<PaginatedCareers>(config, {
     limit: String(limit),
     page: String(page),
-    sort: '-publishedAt',
+    // Alphabetical, so students can scan the full list of career paths.
+    sort: 'title',
   })
 
   return {
@@ -146,7 +138,7 @@ export async function fetchPublishedCareer(
   return doc ? toCareer(doc) : null
 }
 
-/** Every published slug, used at build time to prerender one page per vacancy. */
+/** Every published slug, used at build time to prerender one page per career path. */
 export async function fetchAllPublishedSlugs(config: PayloadConfig): Promise<string[]> {
   const slugs: string[] = []
   let page = 1

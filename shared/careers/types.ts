@@ -1,5 +1,5 @@
 /**
- * Career (vacancy) types shared by the Nuxt site and the Azure Functions API.
+ * Career path types shared by the Nuxt site and the Azure Functions API.
  * This is the single source of truth for the public careers contract.
  */
 
@@ -7,16 +7,8 @@ export interface Career {
   id: string
   title: string
   slug: string
-  department?: string | null
-  location?: string | null
-  employmentType?: string | null
-  /** Plain string or Payload Lexical rich-text JSON. */
-  description?: unknown
-  publishedAt?: string | null
-  /** Optional: external application link. */
-  applicationUrl?: string | null
-  /** Optional: ISO date after which applications close. */
-  closingDate?: string | null
+  /** HTML string, plain string or Payload Lexical rich-text JSON. */
+  content?: unknown
 }
 
 export interface PaginatedCareers {

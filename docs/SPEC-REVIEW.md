@@ -1,5 +1,7 @@
 # Spec review: "Nuxt demo app integrated with Payload CMS instance"
 
+> **Note:** this review describes the original vacancies site. The app has since been repurposed as **Ignite Hubs Careers Hubs**, a career-exploration hub for students. Vacancy-only features (closing dates, Apply button, JobPosting markup, nightly rebuild) were removed. The architecture below is unchanged.
+
 I reviewed the spec before implementing it. Its overall shape is sound: a static Nuxt site on Azure Static Web Apps (SWA), a read-only Azure Functions API in front of Payload, and build-time discovery of vacancy slugs. Several parts would not work as written, though, and some could be improved. This document lists what changed and why.
 
 ## Defects in the spec (would break the build or deployment)

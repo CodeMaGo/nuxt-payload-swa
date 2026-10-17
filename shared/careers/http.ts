@@ -80,7 +80,7 @@ export async function handleGetCareer(
     const config = payloadConfigFromEnv(env)
     const career = await fetchPublishedCareer(config, slug)
     if (!career) {
-      // Short cache so a newly published vacancy appears quickly.
+      // Short cache so a newly published career path appears quickly.
       return { status: 404, body: { error: 'Career not found' }, headers: { 'Cache-Control': 'public, max-age=30' } }
     }
     return { status: 200, body: career, headers: CACHE_OK }

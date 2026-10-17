@@ -2,7 +2,7 @@
 /**
  * Zero-dependency mock of the Payload CMS REST API for the `careers`
  * collection. Implements just enough of the query syntax used by the app:
- * limit, page, sort=-publishedAt, select[...], where[slug|_status][equals].
+ * limit, page, sort=<field>|-<field>, select[...], where[<field>][equals].
  *
  *   node tools/mock-payload/server.mjs            # http://localhost:3001
  *   PORT=4000 MOCK_PAYLOAD_API_KEY=secret node tools/mock-payload/server.mjs
@@ -42,10 +42,16 @@ const server = createServer((req, res) => {
   const select = [...q.keys()].map((k) => /^select\[(\w+)\]$/.exec(k)?.[1]).filter(Boolean)
 
   let docs = careers
-  if (q.has('where[_status][equals]')) docs = docs.filter((d) => d._status === q.get('where[_status][equals]'))
-  if (q.has('where[slug][equals]')) docs = docs.filter((d) => d.slug === q.get('where[slug][equals]'))
-  if (q.get('sort') === '-publishedAt') {
-    docs = [...docs].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)))
+  for (const [key, value] of q) {
+    const field = /^where\[(\w+)\]\[equals\]$/.exec(key)?.[1]
+    // Query values are strings; compare as strings so `published=true` matches a boolean.
+    if (field) docs = docs.filter((d) => String(d[field]) === value)
+  }
+  const sort = q.get('sort')
+  if (sort) {
+    const desc = sort.startsWith('-')
+    const field = desc ? sort.slice(1) : sort
+    docs = [...docs].sort((a, b) => String(a[field] ?? '').localeCompare(String(b[field] ?? '')) * (desc ? -1 : 1))
   }
 
   const limit = Number(q.get('limit')) || 10

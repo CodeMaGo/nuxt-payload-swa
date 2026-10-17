@@ -9,9 +9,6 @@ on:
   # Triggered by Payload (afterChange/afterDelete hook) when careers change.
   repository_dispatch:
     types: [payload-content-changed]
-  # Nightly rebuild so vacancies past their closing date drop out of the static pages.
-  schedule:
-    - cron: '0 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -35,8 +32,9 @@ jobs:
       PAYLOAD_API_KEY: ${{ secrets.PAYLOAD_API_KEY }}
       PAYLOAD_API_KEY_COLLECTION: ${{ vars.PAYLOAD_API_KEY_COLLECTION || 'users' }}
       PAYLOAD_CAREERS_COLLECTION: ${{ vars.PAYLOAD_CAREERS_COLLECTION || 'careers' }}
-      PAYLOAD_DRAFTS: ${{ vars.PAYLOAD_DRAFTS || 'true' }}
-      NUXT_PUBLIC_SITE_NAME: ${{ vars.SITE_NAME || 'Acme Careers' }}
+      PAYLOAD_PUBLISHED_FIELD: ${{ vars.PAYLOAD_PUBLISHED_FIELD || 'published' }}
+      PAYLOAD_DRAFTS: ${{ vars.PAYLOAD_DRAFTS || 'false' }}
+      NUXT_PUBLIC_SITE_NAME: ${{ vars.SITE_NAME || 'Ignite Hubs Careers Hubs' }}
       NUXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
     steps:
       - uses: actions/checkout@v5
@@ -52,7 +50,7 @@ jobs:
       - name: Check Payload configuration
         run: |
           if [ -z "$PAYLOAD_URL" ]; then
-            echo "::error::The PAYLOAD_URL secret is not set (required to prerender vacancy pages)."
+            echo "::error::The PAYLOAD_URL secret is not set (required to prerender career pages)."
             exit 1
           fi
 
@@ -80,7 +78,7 @@ jobs:
       - name: Deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_OCEAN_0DDB7AA10 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: web/.output/public
@@ -96,6 +94,6 @@ jobs:
     steps:
       - uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_OCEAN_0DDB7AA10 }}
           action: close
           app_location: web/.output/public
