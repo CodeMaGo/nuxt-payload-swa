@@ -1,6 +1,6 @@
-# Ignite Hubs Careers Hubs : Sample Nuxt-Azure SWA 
+# Sample Nuxt-Azure SWA 
 
-A sample careers hub built as as Azure Staic Web App using Nuxt and Azure Functions. 
+A sample careers hub built as as Azure Static Web App using Nuxt and Azure Functions. 
 Each career path is a document in the **Careers** collection of **Payload CMS**. Pages are prerendered by **Nuxt 4** in GitHub Actions and served from **Azure Static Web Apps (SWA)**. A small read-only **Azure Functions** API keeps pages up to date between builds.
 
 ```
